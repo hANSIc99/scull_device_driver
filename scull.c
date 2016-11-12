@@ -21,8 +21,8 @@ struct file_operations scull_fops = {
 	.owner = THIS_MODULE,
 	.open = scull_open,
 	.release = scull_release,
-	/* .read = 
-	.write = */
+	.read = scull_read,	
+	.write = scull_write
 };
 
 /* FILE OPERATION METHODS */

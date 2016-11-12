@@ -20,6 +20,11 @@
 #define SCULL_QUANTUM 4000
 #define SCULL_QSET 1000
 
+MODULE_AUTHOR("Alessandro Rubini, Jonathan Corbet");
+MODULE_LICENSE("Dual BSD/GPL");
+
+
+
 /* each structure of this type represents a device */
 struct scull_dev {
 	struct scull_qset *data;	/*  pointer to first quantum set */
@@ -69,6 +74,7 @@ int scull_open(struct inode *inode, struct file *filp);
 int scull_release(struct inode *inode, struct file *filp);
 struct scull_qset *scull_follow(struct scull_dev *dev, int n);
 ssize_t scull_write(struct file *filp, const char __user *buff, size_t count, loff_t *offp);
+ssize_t scull_read(struct file *filp, char __user *buff, size_t count, loff_t *offp);
 
 /* sudo insmod scull.ko howmany=12 drv_name="Driver1" */
 /* sudo rmmod scull */

@@ -18,7 +18,7 @@ echo 'Gruppe: ' $group
 
 # sudo ./scull_load.sh howmany=12 drv_name="Driver1" */
 # '$*' entspricht den aufruf-argumenten
-/sbin/insmod ~/Dokumente/kernel/staging/pwd/scull.ko $* || exit 1
+/sbin/insmod scull.ko $* || exit 1
 
 echo 'Command line arguments:' $* || exit 1
 
