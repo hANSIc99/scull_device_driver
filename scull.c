@@ -71,6 +71,9 @@ ssize_t scull_read(struct file *filp, char __user *buff, size_t count, loff_t *o
 
 	printk(KERN_ALERT "scull_read() called\n");
 
+	if(down_interruptible(&dev->sem))
+		return -ERESTARTSYS;
+
 	/* if the current read position is greater then the device size */
 	if(*offp >= dev->size)
 		goto out;
@@ -115,10 +118,8 @@ ssize_t scull_read(struct file *filp, char __user *buff, size_t count, loff_t *o
 	retval = count;	/* return readed bytes */
 
 	out:
+	up(&dev->sem);
 	return retval;
-	/*  up(&dev->mutex); */
-	
-
 }
 
 
@@ -132,6 +133,10 @@ ssize_t scull_write(struct file *filp, const char __user *buff, size_t count, lo
 	int item, s_pos, q_pos, rest;
 	ssize_t retval = -ENOMEM;	/* value used in "goto out" statements */
 
+	if(down_interruptible(&dev->sem))
+		return -ERESTARTSYS;
+
+	
 	/* find listitem, qset index and offset in the quantum */
 	
 	printk(KERN_ALERT "scull_write() called!\n");
@@ -182,11 +187,12 @@ ssize_t scull_write(struct file *filp, const char __user *buff, size_t count, lo
 
 
 out:
+	up(&dev->sem);
 	return retval;
 }
 
 
-
+/*  follow the list  */
 
 struct scull_qset *scull_follow(struct scull_dev *dev, int n){
 
@@ -201,6 +207,7 @@ struct scull_qset *qs = dev->data;
 	}
 
 /* Follow the list */
+/* n holds the last list item  */
 
 	while (n--){
 		if(!qs->next){	/* last element found */
@@ -244,17 +251,18 @@ static int __init scull_init(void){
 	memset(scull_devices, 0, scull_nr_devices * sizeof(struct scull_dev));
 
 	/* initializsation */
-	for ( i=0; i< scull_nr_devices; i++){
+	for (i=0; i< scull_nr_devices; i++){
 
 		scull_devices[i].quantum = scull_quantum;
 		scull_devices[i].qset = scull_qset;
+		sema_init(&scull_devices[i].sem, 1);
 		mutex_init(&scull_devices[i].mutex);	/* keine Ahnung was ein Mutex ist */
 		scull_setup_cdev(&scull_devices[i], i);	
 	}
 
 	dev = MKDEV(MAJOR(device_number), MINOR(device_number) + scull_nr_devices); 
 
-	/*  Baustelle */
+	/*  Baustelle: functions defined in pipe.c */
 
 	/* dev += scull_p_init(dev);
 	dev += scull_access_init(dev); */
@@ -267,10 +275,7 @@ static int __init scull_init(void){
 	printk(KERN_ALERT "aktueller prozess: %s", current->comm);
 	printk(KERN_ALERT "major numder: %d, minor number: %d",
 	     MAJOR(device_number), MINOR(device_number) );
-#if 0
-	printk(KERN_ALERT "The current process is \"%s\" (pid %i)\n",
-			current->comm, current->pid);
-#endif 
+
 	return 0;
 
 fail:

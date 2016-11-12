@@ -28,6 +28,7 @@ struct scull_dev {
 	unsigned long size;		/*  amount of data stored here */
 	unsigned int access_key;	/*  used by scullid and scullpriv */
 	struct mutex mutex;		/*  mutual exclusion semaphore */
+	struct semaphore sem;		/*  mutual exclusion semaphore */
 	struct cdev cdev;		/*  Char device structure */
 };
 
