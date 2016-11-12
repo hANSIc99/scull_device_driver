@@ -69,6 +69,8 @@ ssize_t scull_read(struct file *filp, char __user *buff, size_t count, loff_t *o
 	int item, s_pos, q_pos, rest;
 	ssize_t retval;
 
+	printk(KERN_ALERT "scull_read() called\n");
+
 	/* if the current read position is greater then the device size */
 	if(*offp >= dev->size)
 		goto out;
@@ -132,6 +134,7 @@ ssize_t scull_write(struct file *filp, const char __user *buff, size_t count, lo
 
 	/* find listitem, qset index and offset in the quantum */
 	
+	printk(KERN_ALERT "scull_write() called!\n");
 	item = (long)*offp / itemsize; /* deflt:  file_pos /  4*10⁶ = number of listitem */
 	rest = (long)*offp % itemsize; /* number of bytes for the last listitem */	
 	s_pos = rest / quantum; /* actual pointer to current quantum (0 < ptr < 999) */
