@@ -4,6 +4,10 @@
 *.obj
 *.elf
 
+# Kernel-Mod files
+*.swp
+*.cmd
+
 # Precompiled Headers
 *.gch
 *.pch
