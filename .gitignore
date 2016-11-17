@@ -7,6 +7,7 @@
 # Kernel-Mod files
 *.swp
 *.cmd
+*.mod.c
 
 # Precompiled Headers
 *.gch
