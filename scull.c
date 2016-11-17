@@ -69,7 +69,7 @@ ssize_t scull_read(struct file *filp, char __user *buff, size_t count, loff_t *o
 	int item, s_pos, q_pos, rest;
 	ssize_t retval;
 
-	printk(KERN_DEBUG "scull_read() called\n");
+	PDEBUG( "scull_read() called\n");
 
 	if(down_interruptible(&dev->sem))
 		return -ERESTARTSYS;
@@ -88,8 +88,8 @@ ssize_t scull_read(struct file *filp, char __user *buff, size_t count, loff_t *o
 	q_pos = rest % quantum;		/* quantum is filled up to this position (0 < q_pos < 3999) */ 
 	dptr = scull_follow(dev, item);
 
-	printk(KERN_DEBUG "scull: s_pos = %d\n", s_pos);
-	printk(KERN_DEBUG "scull: q_pos = %d\n", q_pos);
+	PDEBUG( "s_pos = %d\n", s_pos);
+	PDEBUG( "q_pos = %d\n", q_pos);
 
 	if (dptr == NULL || !dptr->data || !dptr->data[s_pos])
 		goto out;	/* dont fill holes */
@@ -120,7 +120,7 @@ ssize_t scull_read(struct file *filp, char __user *buff, size_t count, loff_t *o
 	*offp += count;	/* update file position pointer */
 	retval = count;	/* return readed bytes */
 
-	printk(KERN_DEBUG "scull: bytes read = %ld\n", retval);
+	PDEBUG( "bytes read = %ld\n", retval);
 
 	out:
 	up(&dev->sem);
@@ -144,14 +144,14 @@ ssize_t scull_write(struct file *filp, const char __user *buff, size_t count, lo
 	
 	/* find listitem, qset index and offset in the quantum */
 	
-	printk(KERN_DEBUG "scull_write() called!\n");
+	PDEBUG( "scull_write() called!\n");
 	item = (long)*offp / itemsize; /* deflt:  file_pos /  4*10⁶ = number of listitem */
 	rest = (long)*offp % itemsize; /* number of bytes for the last listitem */	
 	s_pos = rest / quantum; /* actual pointer to current quantum (0 < ptr < 999) */
 	q_pos = rest % quantum; /* quantum is filled up to this position (0 < q_pos < 3999) */ 
 
-	printk(KERN_DEBUG "scull: s_pos = %d\n", s_pos);
-	printk(KERN_DEBUG "scull: q_pos = %d\n", q_pos);
+	PDEBUG( "s_pos = %d\n", s_pos);
+	PDEBUG( "q_pos = %d\n", q_pos);
 	/* follow the list up to the right position */
 
 	dptr = scull_follow(dev, item);
@@ -192,7 +192,7 @@ ssize_t scull_write(struct file *filp, const char __user *buff, size_t count, lo
 	if(dev->size < *offp)
 		dev->size = *offp;
 
-	printk(KERN_DEBUG "scull: bytes written = %ld\n", retval);
+	PDEBUG( "bytes written = %ld\n", retval);
 
 out:
 	up(&dev->sem);
@@ -206,7 +206,7 @@ struct scull_qset *scull_follow(struct scull_dev *dev, int n){
 
 struct scull_qset *qs = dev->data;
 
-printk(KERN_DEBUG "scull_follow() called");
+PDEBUG( "scull_follow() called");
 
 	if(!qs){
 	/* allocate the first qset explicitly if needed */
@@ -243,7 +243,7 @@ static int __init scull_init(void){
 	result = alloc_chrdev_region(&device_number , scull_minor,scull_nr_devices, drv_name);	
 
 	if(result < 0) {
-		printk(KERN_DEBUG "scull: can't get major %d\n", MAJOR(device_number));
+		PDEBUG( "can't get major %d\n", MAJOR(device_number));
 		return result;
 	}
 
@@ -280,10 +280,10 @@ static int __init scull_init(void){
 		
 
 
-	printk(KERN_DEBUG "scull says hello!\n");
-	printk(KERN_DEBUG "string driver-name = %s, major_init=%d\n", drv_name,major_init);
-	printk(KERN_DEBUG "scull called by process: %s", current->comm);
-	printk(KERN_DEBUG "scull major numder: %d, minor number: %d",
+	PDEBUG( "says hello!\n");
+	PDEBUG( "string driver-name = %s, major_init=%d\n", drv_name,major_init);
+	PDEBUG( "called by process: %s", current->comm);
+	PDEBUG( "major numder: %d, minor number: %d",
 	     MAJOR(device_number), MINOR(device_number) );
 
 	return 0;
@@ -305,7 +305,7 @@ static void scull_setup_cdev(struct scull_dev *dev, int index){
 	err = cdev_add (&dev->cdev, devno, 1);
 
 	if(err)
-		printk(KERN_ERR "scull: Error %d adding scull %d", err, index);
+		PDEBUG("error %d adding scull %d", err, index);
 
 }
 
@@ -340,7 +340,7 @@ static void __exit scull_exit(void){
 
 
 	int i;
-	printk(KERN_DEBUG "scull: scull_exit() calles");
+	PDEBUG( "scull_exit() called");
 
 	if(scull_devices) {
 		for (i = 0; i < scull_nr_devices; i++){
@@ -352,7 +352,7 @@ static void __exit scull_exit(void){
 
 	unregister_chrdev_region(device_number, scull_nr_devices);
 
-	printk(KERN_DEBUG "Goodbye by Stephan\n");
+	PDEBUG( "says goodbye!\n");
 
 }
 
