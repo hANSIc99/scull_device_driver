@@ -14,6 +14,8 @@
 #include <linux/mutex.h> /* init mutex */
 #include <linux/kernel.h> /* container_of macro */
 #include <asm/uaccess.h>	/* copy_to_user */
+#include <linux/proc_fs.h>	/* debugging with read only files in /proc */
+#include <linux/seq_file.h>	/* struct seq_file */
 
 #define SCULL_MINOR 0
 #define SCULL_NR_DEVICES 4
@@ -89,6 +91,7 @@ int scull_p_init(dev_t dev);
 int scull_access_init(dev_t dev);
 int scull_open(struct inode *inode, struct file *filp);
 int scull_release(struct inode *inode, struct file *filp);
+int scull_read_procmem(char* buf, char **start, off_t offset, int count, int *eof, void *data);
 struct scull_qset *scull_follow(struct scull_dev *dev, int n);
 ssize_t scull_write(struct file *filp, const char __user *buff, size_t count, loff_t *offp);
 ssize_t scull_read(struct file *filp, char __user *buff, size_t count, loff_t *offp);
