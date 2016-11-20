@@ -25,6 +25,7 @@ struct file_operations scull_fops = {
 	.write = scull_write
 };
 
+struct proc_dir_entry *scull_proc_entry;
 
 /* FILE OPERATION METHODS */
 /* open the char device driver (file) */
@@ -249,7 +250,6 @@ static int __init scull_init(void){
 
 	int result, i;
 	dev_t dev = 0;
-
 	result = alloc_chrdev_region(&device_number , scull_minor,scull_nr_devices, drv_name);	
 
 	if((result < 0) && printk_ratelimit()) {
@@ -296,6 +296,9 @@ static int __init scull_init(void){
 	PDEBUG( "major numder: %d, minor number: %d",
 	     MAJOR(device_number), MINOR(device_number) );
 	}
+#ifdef SCULL_DEBUG
+	scull_create_proc_entry();
+#endif
 	return 0;
 
 fail:
@@ -368,6 +371,7 @@ static void __exit scull_exit(void){
 
 }
 
+#ifdef SCULL_DEBUG
 
 int scull_read_procmem(char* buf, char **start, off_t offset, int count, int *eof, void *data){
 
@@ -401,14 +405,14 @@ int scull_read_procmem(char* buf, char **start, off_t offset, int count, int *eo
 
 }
 
-static void *scull_seq_start(struct seq_file *s, loff_t *pos){
+void *scull_seq_start(struct seq_file *s, loff_t *pos){
 	if(*pos >= scull_nr_devices)
 		return NULL;	/* no more to read */
 
 	return scull_devices + *pos;
 }
 
-static void *scull_seq_next(struct seq_file *sfile, void *v, loff_t *pos){
+void *scull_seq_next(struct seq_file *sfile, void *v, loff_t *pos){
 	
 	(*pos)++;
 	if(*pos >= scull_nr_devices)
@@ -416,7 +420,7 @@ static void *scull_seq_next(struct seq_file *sfile, void *v, loff_t *pos){
 	return scull_devices + *pos;
 }
 
-static int scull_seq_show(struct seq_file *s, void *v){
+int scull_seq_show(struct seq_file *s, void *v){
 
 	struct scull_dev *dev = (struct scull_dev *) v;
 	struct scull_qset *d;
@@ -445,7 +449,7 @@ static int scull_seq_show(struct seq_file *s, void *v){
 	return 0;
 }
 
-static void scull_seq_stop(struct seq_file *s, void *v){
+void scull_seq_stop(struct seq_file *s, void *v){
 	/* empty - function not needed */
 }
 
@@ -459,7 +463,7 @@ static struct seq_operations scull_seq_ops = {
 	.show = scull_seq_show
 };
 
-static int scull_proc_open(struct inode *inode, struct file *file){
+int scull_proc_open(struct inode *inode, struct file *file){
 	return seq_open(file, &scull_seq_ops);
 }
 
@@ -471,23 +475,15 @@ static struct file_operations scull_proc_ops = {
 	.llseek = seq_lseek,
 	.release = seq_release
 };
-#if 0	/*  BAUSTELLE */
-static void scull_create_proc_entry(void){
 
-	struct proc_dir_entry *entry;
 
-	entry = create_proc_entry("scullseq", 0, NULL);
+void scull_create_proc_entry(void){
 
-	if(entry)
-		entry->proc_fops = &scull_proc_ops;
+proc_create_data("scull_seq_file", 0, NULL, &scull_proc_ops, NULL);
 
 }
 
-
-#ifdef SCULL_DEBUG
-	scull_create_proc_entry();
 #endif
 
-#endif
 module_init(scull_init);
 module_exit(scull_exit);

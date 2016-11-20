@@ -16,6 +16,7 @@
 #include <asm/uaccess.h>	/* copy_to_user */
 #include <linux/proc_fs.h>	/* debugging with read only files in /proc */
 #include <linux/seq_file.h>	/* struct seq_file */
+#include <linux/module.h>
 
 #define SCULL_MINOR 0
 #define SCULL_NR_DEVICES 4
@@ -95,6 +96,14 @@ int scull_read_procmem(char* buf, char **start, off_t offset, int count, int *eo
 struct scull_qset *scull_follow(struct scull_dev *dev, int n);
 ssize_t scull_write(struct file *filp, const char __user *buff, size_t count, loff_t *offp);
 ssize_t scull_read(struct file *filp, char __user *buff, size_t count, loff_t *offp);
+
+/* proc/seq_file operations */
+int scull_proc_open(struct inode *inode, struct file *file);
+void scull_seq_stop(struct seq_file *s, void *v);
+int scull_seq_show(struct seq_file *s, void *v);
+void *scull_seq_next(struct seq_file *sfile, void *v, loff_t *pos);
+void *scull_seq_start(struct seq_file *s, loff_t *pos);
+void scull_create_proc_entry(void);
 
 /* sudo insmod scull.ko howmany=12 drv_name="Driver1" */
 /* sudo rmmod scull */
